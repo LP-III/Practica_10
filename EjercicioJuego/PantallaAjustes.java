@@ -40,7 +40,6 @@ public class PantallaAjustes extends JPanel{
             }
         });
 
-
         JLabel chkSonidos = new JLabel(new ImageIcon("assets/chk2_off.png"));
         chkSonidos.setBounds(350, 230, 64, 64);
         add(chkSonidos);
@@ -66,7 +65,7 @@ public class PantallaAjustes extends JPanel{
         textoIdioma.setFont(new Font("Serif", Font.BOLD, 22));
         textoIdioma.setBounds(350, 315, 200, 40);
         add(textoIdioma);
-        JLabel imgIdioma = new JLabel(new ImageIcon("assets/bandera_es.png"));
+        JLabel imgIdioma = new JLabel(new ImageIcon("assets/bandera_en.png"));
         imgIdioma.setBounds(430, 310, 64, 64);
         add(imgIdioma);
         JButton btnIdioma = new JButton();
@@ -78,15 +77,16 @@ public class PantallaAjustes extends JPanel{
             //o
             public void actionPerformed(ActionEvent e) {
                 ImageIcon actual = (ImageIcon) imgIdioma.getIcon();
-                if (actual.toString().contains("es")) {
-                    imgIdioma.setIcon(new ImageIcon("assets/bandera_en.png"));
-                } else {
+                if (actual.toString().contains("en")) {
                     imgIdioma.setIcon(new ImageIcon("assets/bandera_es.png"));
+                } else {
+                    imgIdioma.setIcon(new ImageIcon("assets/bandera_en.png"));
                 }
             }
         });
         add(btnIdioma);
-        JButton volver = new JButton(new ImageIcon("assets/btn_volver.png"));
+        JButton volver = new JButton(new ImageIcon("assets/boton_volver.png"));
+        volver.setRolloverIcon(new ImageIcon("assets/boton_volver_hover.png"));
         volver.setBounds(380, 440, 200, 80);
         volver.setBorderPainted(false);
         volver.setContentAreaFilled(false);
@@ -101,9 +101,7 @@ public class PantallaAjustes extends JPanel{
         });
         add(volver);
     }
-
-
-    //o
+    //O
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(fondo, 0, 0, getWidth(), getHeight(), this);
