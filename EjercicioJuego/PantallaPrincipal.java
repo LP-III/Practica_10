@@ -1,10 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-public class PantallaPrincipal extends JPanel implements ActionListener {
-    private JFrame ventana;
 
+public class PantallaPrincipal extends JPanel implements ActionListener {
+
+    private JFrame ventana;
     private Image fondo;
+    private DBManager db;
+    private int idPartidaActual;
+
+    private JLayeredPane capas;
 
     private JLabel maniqui;
     private JLabel ropaSuperior;
@@ -16,16 +21,28 @@ public class PantallaPrincipal extends JPanel implements ActionListener {
     private JButton btnZapatos1;
     private JButton btnMenu;
 
-    public PantallaPrincipal(JFrame ventana) {
+    private String escenarioActual = "Closet";
+    private String nombreJugador = "";
+    private String tiempoActual = "00:00";
+
+    public PantallaPrincipal(JFrame ventana, int idPartidaActual) {
         this.ventana = ventana;
+        this.idPartidaActual = idPartidaActual;
+        this.db = new DBManager();
 
         setLayout(null);
-        cargarImagenFondo("assets/fondo_juego.png");
+        cargarImagenFondo("assets/fondo_closet.png");
+
+        capas = new JLayeredPane();
+        capas.setBounds(0, 0, 900, 600);
+        add(capas);
 
         inicializarManiqui();
-        inicializarRopa();
+        inicializarCapasRopa();
         inicializarMenuLateral();
         inicializarBotonMenu();
+
+        cargarDatosPartida();
     }
 
     private void cargarImagenFondo(String ruta) {
@@ -35,50 +52,44 @@ public class PantallaPrincipal extends JPanel implements ActionListener {
     private void inicializarManiqui() {
         maniqui = new JLabel(new ImageIcon("assets/maniqui.png"));
         maniqui.setBounds(300, 80, 300, 500);
-        add(maniqui);
+        capas.add(maniqui, JLayeredPane.DEFAULT_LAYER);
     }
 
-    private void inicializarRopa() {
-        ropaSuperior = new JLabel();
-        ropaSuperior.setBounds(300, 80, 300, 500);
-        add(ropaSuperior);
-
+    private void inicializarCapasRopa() {
         ropaInferior = new JLabel();
-        ropaInferior.setBounds(300, 80, 300, 500);
-        add(ropaInferior);
+        ropaInferior.setBounds(390, 110, 300, 500);
+        capas.add(ropaInferior, JLayeredPane.PALETTE_LAYER);
+
+        ropaSuperior = new JLabel();
+        ropaSuperior.setBounds(390, 35, 300, 500);
+        capas.add(ropaSuperior, JLayeredPane.MODAL_LAYER);
 
         zapatos = new JLabel();
-        zapatos.setBounds(300, 80, 300, 500);
-        add(zapatos);
+        zapatos.setBounds(388, 260, 300, 500);
+        capas.add(zapatos, JLayeredPane.DRAG_LAYER);
     }
 
     private void inicializarMenuLateral() {
-
-        JLabel titulo = new JLabel("Ropa");
-        titulo.setForeground(Color.WHITE);
-        titulo.setBounds(30, 20, 200, 30);
-        add(titulo);
-
         btnSuperior1 = new JButton(new ImageIcon("assets/superior1.png"));
         btnSuperior1.setBounds(30, 80, 120, 120);
         btnSuperior1.setContentAreaFilled(false);
         btnSuperior1.setBorderPainted(false);
         btnSuperior1.addActionListener(this);
-        add(btnSuperior1);
+        capas.add(btnSuperior1, JLayeredPane.POPUP_LAYER);
 
         btnInferior1 = new JButton(new ImageIcon("assets/inferior1.png"));
-        btnInferior1.setBounds(30, 220, 120, 120);
+        btnInferior1.setBounds(30, 230, 120, 120);
         btnInferior1.setContentAreaFilled(false);
         btnInferior1.setBorderPainted(false);
         btnInferior1.addActionListener(this);
-        add(btnInferior1);
+        capas.add(btnInferior1, JLayeredPane.POPUP_LAYER);
 
         btnZapatos1 = new JButton(new ImageIcon("assets/zapatos1.png"));
         btnZapatos1.setBounds(30, 360, 120, 120);
         btnZapatos1.setContentAreaFilled(false);
         btnZapatos1.setBorderPainted(false);
         btnZapatos1.addActionListener(this);
-        add(btnZapatos1);
+        capas.add(btnZapatos1, JLayeredPane.POPUP_LAYER);
     }
 
     private void inicializarBotonMenu() {
@@ -87,28 +98,39 @@ public class PantallaPrincipal extends JPanel implements ActionListener {
         btnMenu.setContentAreaFilled(false);
         btnMenu.setBorderPainted(false);
         btnMenu.addActionListener(this);
-        add(btnMenu);
+        capas.add(btnMenu, JLayeredPane.POPUP_LAYER);
     }
 
-    public void paintComponent(Graphics g) {
+    private void cargarDatosPartida() {
+        Partida p = db.getPartida(idPartidaActual);
+        if (p == null) {
+            return;
+        }
+
+        nombreJugador = p.getNombre();
+        tiempoActual = p.getTiempo();
+        escenarioActual = p.getEscenario();
+        ropaSuperior.setIcon(p.getRopaSuperior() == null ? null : new ImageIcon(p.getRopaSuperior()));
+        ropaInferior.setIcon(p.getRopaInferior() == null ? null : new ImageIcon(p.getRopaInferior()));
+        zapatos.setIcon(p.getZapatos() == null ? null : new ImageIcon(p.getZapatos()));
+
+    }
+
+    public void paintComponent(Graphics g){
         super.paintComponent(g);
         g.drawImage(fondo, 0, 0, getWidth(), getHeight(), this);
     }
-
-    public void actionPerformed(ActionEvent e) {
-
+    public void actionPerformed(ActionEvent e){
         if (e.getSource() == btnSuperior1) {
             ropaSuperior.setIcon(new ImageIcon("assets/superior1.png"));
         }
 
-        if (e.getSource() == btnInferior1) {
+        if (e.getSource() == btnInferior1){
             ropaInferior.setIcon(new ImageIcon("assets/inferior1.png"));
         }
-
-        if (e.getSource() == btnZapatos1) {
+        if (e.getSource() == btnZapatos1){
             zapatos.setIcon(new ImageIcon("assets/zapatos1.png"));
         }
-
         if (e.getSource() == btnMenu) {
             mostrarMenuJuego();
         }
@@ -116,20 +138,20 @@ public class PantallaPrincipal extends JPanel implements ActionListener {
 
     private void mostrarMenuJuego() {
         int opcion = JOptionPane.showOptionDialog(
-                this,
-                "¿Qué deseas hacer?",
-                "Menú del Juego",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                new Object[]{"Guardar", "Salir al Inicio", "Cancelar"},
-                "Cancelar"
-        );
+                this,"¿Qué hacer?","Menu del Juego",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,new Object[]{"Guardar", "Salir", "Cancelar"},"Cancelar");
 
         if (opcion == 0) {
-            JOptionPane.showMessageDialog(this, "Guardando partida... (luego conectar a SQLite)");
+            db.guardarPartida(
+                idPartidaActual,
+                nombreJugador,
+                tiempoActual,
+                escenarioActual,
+                ropaSuperior.getIcon() == null ? null :((ImageIcon) ropaSuperior.getIcon()).getDescription(),
+                ropaInferior.getIcon() == null ? null :((ImageIcon) ropaInferior.getIcon()).getDescription(),
+                zapatos.getIcon() == null ? null:((ImageIcon) zapatos.getIcon()).getDescription()
+            );
+            JOptionPane.showMessageDialog(this, "Partida guardada correctamente.");
         }
-
         if (opcion == 1) {
             ventana.setContentPane(new PantallaInicio(ventana));
             ventana.revalidate();
